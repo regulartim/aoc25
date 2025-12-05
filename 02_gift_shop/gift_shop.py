@@ -18,7 +18,6 @@ def is_invalid(product_id: int, part2: bool = False) -> bool:
 with open("input.txt") as file:
     id_ranges = [pair.split("-") for pair in file.read().strip().split(",")]
 
-ids = [i for r in id_ranges for i in r]
 invalid_ids_p1 = [i for start, end in id_ranges for i in range(int(start), int(end) + 1) if is_invalid(i)]
 invalid_ids_p2 = [i for start, end in id_ranges for i in range(int(start), int(end) + 1) if is_invalid(i, True)]
 
