@@ -1,40 +1,35 @@
 import re
 import time
+from functools import cache
 
 begin = time.time()
 
 ###
 
-CACHE = dict()
+GRAPH = dict()
 
-def dfs(wires, current, part2=False, dac=False, fft=False) -> int:
-    state = (current, dac, fft, part2) 
-    if state in CACHE:
-        return CACHE[state]
+
+@cache
+def dfs(current: str, part: int = 1, dac: bool = False, fft: bool = False) -> int:
     total = 0
-    for output in wires[current]:
-        if not part2:
-            if output == "out":
-                return 1
-            total += dfs(wires, output)
-            continue
-        match output:
-            case "out": return int(dac and fft)
-            case "dac": total += dfs(wires, output, part2, dac=True, fft=fft)
-            case "fft": total += dfs(wires, output, part2, dac=dac, fft=True)
-            case _    : total += dfs(wires, output, part2, dac=dac, fft=fft)
-    CACHE[state] = total
+    for output in GRAPH.get(current, []):
+        match part, output:
+            case 1, "out": return 1
+            case 1, _    : total += dfs(output)
+            case 2, "out": return int(dac and fft)
+            case 2, "dac": total += dfs(output, part=2, dac=True, fft=fft)
+            case 2, "fft": total += dfs(output, part=2, dac=dac, fft=True)
+            case 2, _    : total += dfs(output, part=2, dac=dac, fft=fft)
     return total
 
 
-wiring = dict()
 with open("input.txt") as file:
     for line in file.readlines():
         key, *vals = re.findall(r"\w+", line)
-        wiring[key] = list(vals)
+        GRAPH[key] = list(vals)
 
-print(f"Part 1: {dfs(wiring, "you")}")
-print(f"Part 2: {dfs(wiring, "svr", part2=True)}")
+print(f"Part 1: {dfs("you")}")
+print(f"Part 2: {dfs("svr", part=2)}")
 
 ###
 
